@@ -21,6 +21,7 @@ import com.example.cbs.config.JwtAuthFilter;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+import org.springframework.web.servlet.config.annotation.CorsRegistry;
 
 import java.util.List;
 
@@ -30,6 +31,8 @@ import java.util.List;
 @EnableGlobalMethodSecurity(prePostEnabled = true)
 @RequiredArgsConstructor
 public class SecurityConfig {
+
+
 
     private final JwtAuthFilter jwtAuthFilter;
     private final CustomerUserServiceDetails userDetailsService;

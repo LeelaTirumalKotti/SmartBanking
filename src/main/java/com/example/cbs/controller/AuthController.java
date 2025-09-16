@@ -4,6 +4,7 @@ import com.example.cbs.dto.AuthRequest;
 import com.example.cbs.dto.AuthResponse;
 import com.example.cbs.dto.RegisterRequest;
 import com.example.cbs.domain.User;
+import com.example.cbs.responses.ServiceResponse;
 import com.example.cbs.service.AuthService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -28,7 +29,13 @@ public class AuthController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<AuthResponse> login(@RequestBody AuthRequest request) {
-        return ResponseEntity.ok(authService.login(request));
+    public ResponseEntity<?> login(@RequestBody AuthRequest request) {
+        ServiceResponse<AuthResponse> response=authService.login(request);
+        if(response.getStatus().equalsIgnoreCase("FAIL")){
+            return ResponseEntity.badRequest().body(response.getMessage());
+        }
+
+        return ResponseEntity.ok(response.getData());
+
     }
 }

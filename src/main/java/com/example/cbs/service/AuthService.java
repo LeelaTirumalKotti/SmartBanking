@@ -5,11 +5,13 @@ import com.example.cbs.domain.Role;
 import com.example.cbs.domain.User;
 import com.example.cbs.dto.*;
 import com.example.cbs.repo.UserRepository;
+import com.example.cbs.responses.ServiceResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.GetMapping;
 
+import java.net.http.HttpResponse;
 import java.util.Optional;
 
 @Service
@@ -59,29 +61,29 @@ public class AuthService {
 
 
 
-    public AuthResponse login(AuthRequest req) {
+    public ServiceResponse<AuthResponse> login(AuthRequest req) {
         Optional<User> optionalUser = userRepo.findByUsername(req.getUsername());
 
         if (req.getUsername() == null || req.getUsername().isEmpty()) {
-            return new AuthResponse("400", "Username is required");
+            return new ServiceResponse<>("FAIL","Invalid Details",null);
         }
 
         if (req.getPassword() == null || req.getPassword().isEmpty()) {
-            return new AuthResponse("400", "Password is required");
+            return new ServiceResponse<>("FAIL","Invalid Password",null);
         }
 
         if (optionalUser.isEmpty()) {
-            return new AuthResponse("404", "User not found");
+            return new ServiceResponse<>("FAIL","User not Found",null);
         }
 
         User user = optionalUser.get();
 
         if (!passwordEncoder.matches(req.getPassword(), user.getPassword())) {
-            return new AuthResponse("401", "Invalid password");
+            return new ServiceResponse<>("FAIL","Password doesnot match",null);
         }
 
         String token = jwtUtil.generateToken(user.getUsername(), user.getRole().name());
-        return new AuthResponse(token, user.getRole().name());
+        return new ServiceResponse<>("SUCCESS","Login Success",new AuthResponse(token,user.getRole().name()));
     }
 
 
