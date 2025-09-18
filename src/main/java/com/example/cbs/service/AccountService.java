@@ -3,6 +3,7 @@ package com.example.cbs.service;
 import com.example.cbs.domain.Account;
 import com.example.cbs.domain.AccountType;
 import com.example.cbs.domain.User;
+import com.example.cbs.dto.AccountResponse;
 import com.example.cbs.repo.AccountRepository;
 import com.example.cbs.repo.UserRepository;
 import jakarta.transaction.Transactional;
@@ -19,31 +20,52 @@ public class AccountService {
 
     private final  AccountRepository accountRepository;
     private final UserRepository userRepository;
-    private String accountType;
+    private AccountType accountType;
 
     @Transactional
-    public Account openAccount(Long userId, String accountType) {
+    public AccountResponse openAccount(Long userId, String accountType) {
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("User not found with id " + userId));
+                .orElse(null);
+
+        if (user == null) {
+            return new AccountResponse(false, "User not found with id " + userId);
+        }
+
+        AccountType type;
+        try {
+            type = AccountType.valueOf(accountType.toUpperCase());
+        } catch (IllegalArgumentException e) {
+            return new AccountResponse(false, "Invalid account type: " + accountType);
+        }
+
+        boolean exists = accountRepository.existsByUserIdAndAccountType(userId, type);
+        if (exists) {
+            return new AccountResponse(false, "User already has an account of type " + accountType);
+        }
 
         Account account = new Account();
         account.setUser(user);
-        account.setAccountNumber(generateAccountNumber());
-        this.accountType=accountType;
-        account.setAccountType(AccountType.valueOf(accountType.toUpperCase()));
+        account.setAccountType(type);
+        account.setAccountNumber(generateAccountNumber(type));
         account.setBalance(BigDecimal.ZERO);
 
-        return accountRepository.save(account);
+        Account savedAccount = accountRepository.save(account);
+        return new AccountResponse(true, "Account created successfully", savedAccount);
     }
 
 //    public void setAccountType(String accountType){
 //        this.accountType=accountType;
 //    }
 
-    private String generateAccountNumber() {
-        if(accountType!=null)
-        return  this.accountType.toUpperCase().substring(0,4)+"-"+ UUID.randomUUID().toString().substring(0, 8).toUpperCase();
-        return "ACC-"+UUID.randomUUID().toString().substring(0,8);
+//    private String generateAccountNumber(AccountType type) {
+//        if(accountType!=null)
+//            return  accountType.name().toUpperCase().substring(0,4)+"-"+ UUID.randomUUID().toString().substring(0, 8).toUpperCase();
+//        return "ACC-"+UUID.randomUUID().toString().substring(0,8);
+//    }
+
+
+    private String generateAccountNumber(AccountType accountType) {
+        return accountType.name().substring(0, 4) + "-" + UUID.randomUUID().toString().substring(0, 8).toUpperCase();
     }
 
 
