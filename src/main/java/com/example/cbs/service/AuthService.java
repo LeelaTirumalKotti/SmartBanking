@@ -25,26 +25,26 @@ public class AuthService {
     public AuthResponse register(RegisterRequest request) {
 
         if (request.getUsername() == null || request.getUsername().isEmpty()) {
-            return new AuthResponse("400", "Username is required");
+            return new AuthResponse("400", "Username is required",-1);
         }
 
         if (request.getPassword() == null || request.getPassword().isEmpty()) {
-            return new AuthResponse("400", "Password is required");
+            return new AuthResponse("400", "Password is required",-1);
         }
 
         if (request.getRole() == null || request.getRole().isEmpty()) {
-            return new AuthResponse("400", "Role is required");
+            return new AuthResponse("400", "Role is required",-1);
         }
 
         if (userRepo.findByUsername(request.getUsername()).isPresent()) {
-            return new AuthResponse("409", "Username already exists");
+            return new AuthResponse("409", "Username already exists",-1);
         }
 
         Role role;
         try {
             role = Role.valueOf(request.getRole().toUpperCase());
         } catch (IllegalArgumentException e) {
-            return new AuthResponse("400", "Invalid role specified");
+            return new AuthResponse("400", "Invalid role specified",-1);
         }
 
         User user = User.builder()
@@ -56,7 +56,7 @@ public class AuthService {
         userRepo.save(user);
 
         String token = jwtUtil.generateToken(user.getUsername(), user.getRole().name());
-        return new AuthResponse(token, user.getRole().name());
+        return new AuthResponse(token, user.getRole().name(),user.getId());
     }
 
 
@@ -83,7 +83,7 @@ public class AuthService {
         }
 
         String token = jwtUtil.generateToken(user.getUsername(), user.getRole().name());
-        return new ServiceResponse<>("SUCCESS","Login Success",new AuthResponse(token,user.getRole().name()));
+        return new ServiceResponse<>("SUCCESS","Login Success",new AuthResponse(token,user.getRole().name(),user.getId()));
     }
 
 
