@@ -2,6 +2,7 @@ package com.example.cbs.controller;
 
 import com.example.cbs.domain.*;
 import com.example.cbs.domain.Transaction;
+import com.example.cbs.service.AccountService;
 import com.example.cbs.service.AdminService;
 import com.example.cbs.service.CustomerProfileService;
 import com.example.cbs.service.UserService;
@@ -21,6 +22,7 @@ public class AdminController {
 
     private final  CustomerProfileService customerProfileService;
     private final UserService userService;
+    private final AccountService accountService;
 
     @PutMapping("/profiles/{id}/kyc")
     public ResponseEntity<CustomerProfile> updateKycStatus(
@@ -49,6 +51,11 @@ public class AdminController {
         List<User> users = userService.getAllUsers();
         return ResponseEntity.ok(users);
 
+    }
+
+    @GetMapping("/{userId}")
+    public ResponseEntity<List<Account>> getAccounts(@PathVariable Long userId) {
+        return ResponseEntity.ok(accountService.getAccountsByUserId(userId));
     }
 
 
